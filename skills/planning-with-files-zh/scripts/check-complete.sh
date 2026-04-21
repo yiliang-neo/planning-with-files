@@ -1,12 +1,17 @@
 #!/bin/bash
-# 检查 task_plan.md 中所有阶段是否完成
+# 检查 .idea/task_plan_*.md 中所有阶段是否完成
 # 始终以退出码 0 结束 — 使用标准输出报告状态
 # 由 Stop 钩子调用以报告任务完成状态
 
-PLAN_FILE="${1:-task_plan.md}"
+# 支持直接传入文件路径，或自动查找 .idea/task_plan_*.md
+if [ -n "$1" ]; then
+    PLAN_FILE="$1"
+else
+    PLAN_FILE=$(ls .idea/task_plan_*.md 2>/dev/null | head -1)
+fi
 
-if [ ! -f "$PLAN_FILE" ]; then
-    echo "[planning-with-files] 未找到 task_plan.md — 没有进行中的规划会话。"
+if [ -z "$PLAN_FILE" ] || [ ! -f "$PLAN_FILE" ]; then
+    echo "[planning-with-files] 未找到 task_plan 文件 — 没有进行中的规划会话。"
     exit 0
 fi
 
@@ -33,9 +38,9 @@ fi
 
 # 报告状态（始终以退出码 0 结束 — 未完成的任务是正常状态）
 if [ "$COMPLETE" -eq "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
-    echo "[planning-with-files] 所有阶段已完成（$COMPLETE/$TOTAL）。如果用户有额外工作，请在开始前于 task_plan.md 中新增阶段。"
+    echo "[planning-with-files] 所有阶段已完成（$COMPLETE/$TOTAL）。如果用户有额外工作，请在开始前于 .idea/task_plan_*.md 中新增阶段。"
 else
-    echo "[planning-with-files] 任务进行中（$COMPLETE/$TOTAL 个阶段已完成）。停止前请更新 progress.md。"
+    echo "[planning-with-files] 任务进行中（$COMPLETE/$TOTAL 个阶段已完成）。停止前请更新 .idea/progress_*.md。"
     if [ "$IN_PROGRESS" -gt 0 ]; then
         echo "[planning-with-files] $IN_PROGRESS 个阶段仍在进行中。"
     fi

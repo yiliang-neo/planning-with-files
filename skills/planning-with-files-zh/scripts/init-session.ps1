@@ -1,16 +1,28 @@
 # 初始化新会话的规划文件
-# 用法：.\init-session.ps1 [项目名称]
+# 用法：.\init-session.ps1 [任务标题]
 
 param(
-    [string]$ProjectName = "project"
+    [string]$TaskTitle = "task"
 )
 
-$DATE = Get-Date -Format "yyyy-MM-dd"
+$DATE = Get-Date -Format "yyyyMMdd"
 
-Write-Host "正在初始化规划文件：$ProjectName"
+# 将标题中的空格替换为下划线，去除特殊字符
+$SafeTitle = $TaskTitle -replace '\s', '_' -replace '[^\w一-鿿]', ''
 
-# 如果 task_plan.md 不存在则创建
-if (-not (Test-Path "task_plan.md")) {
+$TaskPlanFile = ".idea\task_plan_${SafeTitle}_${DATE}.md"
+$FindingsFile = ".idea\findings_${SafeTitle}_${DATE}.md"
+$ProgressFile = ".idea\progress_${SafeTitle}_${DATE}.md"
+
+# 确保 .idea 目录存在
+if (-not (Test-Path ".idea")) {
+    New-Item -ItemType Directory -Path ".idea" | Out-Null
+}
+
+Write-Host "正在初始化规划文件：$TaskTitle"
+
+# 如果 task_plan 文件不存在则创建
+if (-not (Test-Path $TaskPlanFile)) {
     @"
 # 任务计划：[简要描述]
 
@@ -25,7 +37,7 @@ if (-not (Test-Path "task_plan.md")) {
 ### 阶段 1：需求与发现
 - [ ] 理解用户意图
 - [ ] 确定约束条件和需求
-- [ ] 将发现记录到 findings.md
+- [ ] 将发现记录到 .idea/findings_*.md
 - **状态：** in_progress
 
 ### 阶段 2：规划与结构
@@ -42,7 +54,7 @@ if (-not (Test-Path "task_plan.md")) {
 
 ### 阶段 4：测试与验证
 - [ ] 验证所有需求已满足
-- [ ] 将测试结果记录到 progress.md
+- [ ] 将测试结果记录到 .idea/progress_*.md
 - [ ] 修复发现的问题
 - **状态：** pending
 
@@ -59,14 +71,14 @@ if (-not (Test-Path "task_plan.md")) {
 ## 遇到的错误
 | 错误 | 解决方案 |
 |------|---------|
-"@ | Out-File -FilePath "task_plan.md" -Encoding UTF8
-    Write-Host "已创建 task_plan.md"
+"@ | Out-File -FilePath $TaskPlanFile -Encoding UTF8
+    Write-Host "已创建 $TaskPlanFile"
 } else {
-    Write-Host "task_plan.md 已存在，跳过"
+    Write-Host "$TaskPlanFile 已存在，跳过"
 }
 
-# 如果 findings.md 不存在则创建
-if (-not (Test-Path "findings.md")) {
+# 如果 findings 文件不存在则创建
+if (-not (Test-Path $FindingsFile)) {
     @"
 # 发现与决策
 
@@ -86,14 +98,14 @@ if (-not (Test-Path "findings.md")) {
 
 ## 资源
 -
-"@ | Out-File -FilePath "findings.md" -Encoding UTF8
-    Write-Host "已创建 findings.md"
+"@ | Out-File -FilePath $FindingsFile -Encoding UTF8
+    Write-Host "已创建 $FindingsFile"
 } else {
-    Write-Host "findings.md 已存在，跳过"
+    Write-Host "$FindingsFile 已存在，跳过"
 }
 
-# 如果 progress.md 不存在则创建
-if (-not (Test-Path "progress.md")) {
+# 如果 progress 文件不存在则创建
+if (-not (Test-Path $ProgressFile)) {
     @"
 # 进度日志
 
@@ -113,12 +125,13 @@ if (-not (Test-Path "progress.md")) {
 ### 错误
 | 错误 | 解决方案 |
 |------|---------|
-"@ | Out-File -FilePath "progress.md" -Encoding UTF8
-    Write-Host "已创建 progress.md"
+"@ | Out-File -FilePath $ProgressFile -Encoding UTF8
+    Write-Host "已创建 $ProgressFile"
 } else {
-    Write-Host "progress.md 已存在，跳过"
+    Write-Host "$ProgressFile 已存在，跳过"
 }
 
 Write-Host ""
 Write-Host "规划文件已初始化！"
-Write-Host "文件：task_plan.md, findings.md, progress.md"
+Write-Host "目录：.idea\"
+Write-Host "文件：$TaskPlanFile, $FindingsFile, $ProgressFile"

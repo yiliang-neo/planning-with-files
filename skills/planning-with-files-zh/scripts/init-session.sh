@@ -1,17 +1,27 @@
 #!/bin/bash
 # 初始化新会话的规划文件
-# 用法：./init-session.sh [项目名称]
+# 用法：./init-session.sh [任务标题]
 
 set -e
 
-PROJECT_NAME="${1:-project}"
-DATE=$(date +%Y-%m-%d)
+TASK_TITLE="${1:-task}"
+DATE=$(date +%Y%m%d)
 
-echo "正在初始化规划文件：$PROJECT_NAME"
+# 将标题中的空格替换为下划线，去除特殊字符
+SAFE_TITLE=$(echo "$TASK_TITLE" | tr ' ' '_' | tr -cd '[:alnum:]_一-鿿-')
 
-# 如果 task_plan.md 不存在则创建
-if [ ! -f "task_plan.md" ]; then
-    cat > task_plan.md << 'EOF'
+TASK_PLAN_FILE=".idea/task_plan_${SAFE_TITLE}_${DATE}.md"
+FINDINGS_FILE=".idea/findings_${SAFE_TITLE}_${DATE}.md"
+PROGRESS_FILE=".idea/progress_${SAFE_TITLE}_${DATE}.md"
+
+# 确保 .idea 目录存在
+mkdir -p .idea
+
+echo "正在初始化规划文件：$TASK_TITLE"
+
+# 如果 task_plan 文件不存在则创建
+if [ ! -f "$TASK_PLAN_FILE" ]; then
+    cat > "$TASK_PLAN_FILE" << 'EOF'
 # 任务计划：[简要描述]
 
 ## 目标
@@ -25,7 +35,7 @@ if [ ! -f "task_plan.md" ]; then
 ### 阶段 1：需求与发现
 - [ ] 理解用户意图
 - [ ] 确定约束条件和需求
-- [ ] 将发现记录到 findings.md
+- [ ] 将发现记录到 .idea/findings_*.md
 - **状态：** in_progress
 
 ### 阶段 2：规划与结构
@@ -42,7 +52,7 @@ if [ ! -f "task_plan.md" ]; then
 
 ### 阶段 4：测试与验证
 - [ ] 验证所有需求已满足
-- [ ] 将测试结果记录到 progress.md
+- [ ] 将测试结果记录到 .idea/progress_*.md
 - [ ] 修复发现的问题
 - **状态：** pending
 
@@ -60,14 +70,14 @@ if [ ! -f "task_plan.md" ]; then
 | 错误 | 解决方案 |
 |------|---------|
 EOF
-    echo "已创建 task_plan.md"
+    echo "已创建 $TASK_PLAN_FILE"
 else
-    echo "task_plan.md 已存在，跳过"
+    echo "$TASK_PLAN_FILE 已存在，跳过"
 fi
 
-# 如果 findings.md 不存在则创建
-if [ ! -f "findings.md" ]; then
-    cat > findings.md << 'EOF'
+# 如果 findings 文件不存在则创建
+if [ ! -f "$FINDINGS_FILE" ]; then
+    cat > "$FINDINGS_FILE" << 'EOF'
 # 发现与决策
 
 ## 需求
@@ -87,14 +97,14 @@ if [ ! -f "findings.md" ]; then
 ## 资源
 -
 EOF
-    echo "已创建 findings.md"
+    echo "已创建 $FINDINGS_FILE"
 else
-    echo "findings.md 已存在，跳过"
+    echo "$FINDINGS_FILE 已存在，跳过"
 fi
 
-# 如果 progress.md 不存在则创建
-if [ ! -f "progress.md" ]; then
-    cat > progress.md << EOF
+# 如果 progress 文件不存在则创建
+if [ ! -f "$PROGRESS_FILE" ]; then
+    cat > "$PROGRESS_FILE" << EOF
 # 进度日志
 
 ## 会话：$DATE
@@ -114,11 +124,12 @@ if [ ! -f "progress.md" ]; then
 | 错误 | 解决方案 |
 |------|---------|
 EOF
-    echo "已创建 progress.md"
+    echo "已创建 $PROGRESS_FILE"
 else
-    echo "progress.md 已存在，跳过"
+    echo "$PROGRESS_FILE 已存在，跳过"
 fi
 
 echo ""
 echo "规划文件已初始化！"
-echo "文件：task_plan.md, findings.md, progress.md"
+echo "目录：.idea/"
+echo "文件：$TASK_PLAN_FILE, $FINDINGS_FILE, $PROGRESS_FILE"

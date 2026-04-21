@@ -1,16 +1,28 @@
 # Initialize planning files for a new session
-# Usage: .\init-session.ps1 [project-name]
+# Usage: .\init-session.ps1 [task-title]
 
 param(
-    [string]$ProjectName = "project"
+    [string]$TaskTitle = "task"
 )
 
-$DATE = Get-Date -Format "yyyy-MM-dd"
+$DATE = Get-Date -Format "yyyyMMdd"
 
-Write-Host "Initializing planning files for: $ProjectName"
+# Replace spaces with underscores, strip special characters
+$SafeTitle = $TaskTitle -replace '\s', '_' -replace '[^\w]', ''
 
-# Create task_plan.md if it doesn't exist
-if (-not (Test-Path "task_plan.md")) {
+$TaskPlanFile = ".idea\task_plan_${SafeTitle}_${DATE}.md"
+$FindingsFile = ".idea\findings_${SafeTitle}_${DATE}.md"
+$ProgressFile = ".idea\progress_${SafeTitle}_${DATE}.md"
+
+# Ensure .idea directory exists
+if (-not (Test-Path ".idea")) {
+    New-Item -ItemType Directory -Path ".idea" | Out-Null
+}
+
+Write-Host "Initializing planning files for: $TaskTitle"
+
+# Create task_plan file if it doesn't exist
+if (-not (Test-Path $TaskPlanFile)) {
     @"
 # Task Plan: [Brief Description]
 
@@ -25,7 +37,7 @@ Phase 1
 ### Phase 1: Requirements & Discovery
 - [ ] Understand user intent
 - [ ] Identify constraints
-- [ ] Document in findings.md
+- [ ] Document in .idea/findings_*.md
 - **Status:** in_progress
 
 ### Phase 2: Planning & Structure
@@ -40,7 +52,7 @@ Phase 1
 
 ### Phase 4: Testing & Verification
 - [ ] Verify requirements met
-- [ ] Document test results
+- [ ] Document test results in .idea/progress_*.md
 - **Status:** pending
 
 ### Phase 5: Delivery
@@ -55,14 +67,14 @@ Phase 1
 ## Errors Encountered
 | Error | Resolution |
 |-------|------------|
-"@ | Out-File -FilePath "task_plan.md" -Encoding UTF8
-    Write-Host "Created task_plan.md"
+"@ | Out-File -FilePath $TaskPlanFile -Encoding UTF8
+    Write-Host "Created $TaskPlanFile"
 } else {
-    Write-Host "task_plan.md already exists, skipping"
+    Write-Host "$TaskPlanFile already exists, skipping"
 }
 
-# Create findings.md if it doesn't exist
-if (-not (Test-Path "findings.md")) {
+# Create findings file if it doesn't exist
+if (-not (Test-Path $FindingsFile)) {
     @"
 # Findings & Decisions
 
@@ -82,14 +94,14 @@ if (-not (Test-Path "findings.md")) {
 
 ## Resources
 -
-"@ | Out-File -FilePath "findings.md" -Encoding UTF8
-    Write-Host "Created findings.md"
+"@ | Out-File -FilePath $FindingsFile -Encoding UTF8
+    Write-Host "Created $FindingsFile"
 } else {
-    Write-Host "findings.md already exists, skipping"
+    Write-Host "$FindingsFile already exists, skipping"
 }
 
-# Create progress.md if it doesn't exist
-if (-not (Test-Path "progress.md")) {
+# Create progress file if it doesn't exist
+if (-not (Test-Path $ProgressFile)) {
     @"
 # Progress Log
 
@@ -109,12 +121,13 @@ if (-not (Test-Path "progress.md")) {
 ### Errors
 | Error | Resolution |
 |-------|------------|
-"@ | Out-File -FilePath "progress.md" -Encoding UTF8
-    Write-Host "Created progress.md"
+"@ | Out-File -FilePath $ProgressFile -Encoding UTF8
+    Write-Host "Created $ProgressFile"
 } else {
-    Write-Host "progress.md already exists, skipping"
+    Write-Host "$ProgressFile already exists, skipping"
 }
 
 Write-Host ""
 Write-Host "Planning files initialized!"
-Write-Host "Files: task_plan.md, findings.md, progress.md"
+Write-Host "Directory: .idea\"
+Write-Host "Files: $TaskPlanFile, $FindingsFile, $ProgressFile"

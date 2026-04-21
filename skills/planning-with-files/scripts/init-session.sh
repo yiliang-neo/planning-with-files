@@ -1,17 +1,27 @@
 #!/bin/bash
 # Initialize planning files for a new session
-# Usage: ./init-session.sh [project-name]
+# Usage: ./init-session.sh [task-title]
 
 set -e
 
-PROJECT_NAME="${1:-project}"
-DATE=$(date +%Y-%m-%d)
+TASK_TITLE="${1:-task}"
+DATE=$(date +%Y%m%d)
 
-echo "Initializing planning files for: $PROJECT_NAME"
+# Replace spaces with underscores, strip special characters
+SAFE_TITLE=$(echo "$TASK_TITLE" | tr ' ' '_' | tr -cd '[:alnum:]_')
 
-# Create task_plan.md if it doesn't exist
-if [ ! -f "task_plan.md" ]; then
-    cat > task_plan.md << 'EOF'
+TASK_PLAN_FILE=".idea/task_plan_${SAFE_TITLE}_${DATE}.md"
+FINDINGS_FILE=".idea/findings_${SAFE_TITLE}_${DATE}.md"
+PROGRESS_FILE=".idea/progress_${SAFE_TITLE}_${DATE}.md"
+
+# Ensure .idea directory exists
+mkdir -p .idea
+
+echo "Initializing planning files for: $TASK_TITLE"
+
+# Create task_plan file if it doesn't exist
+if [ ! -f "$TASK_PLAN_FILE" ]; then
+    cat > "$TASK_PLAN_FILE" << 'EOF'
 # Task Plan: [Brief Description]
 
 ## Goal
@@ -25,7 +35,7 @@ Phase 1
 ### Phase 1: Requirements & Discovery
 - [ ] Understand user intent
 - [ ] Identify constraints
-- [ ] Document in findings.md
+- [ ] Document in .idea/findings_*.md
 - **Status:** in_progress
 
 ### Phase 2: Planning & Structure
@@ -40,7 +50,7 @@ Phase 1
 
 ### Phase 4: Testing & Verification
 - [ ] Verify requirements met
-- [ ] Document test results
+- [ ] Document test results in .idea/progress_*.md
 - **Status:** pending
 
 ### Phase 5: Delivery
@@ -56,14 +66,14 @@ Phase 1
 | Error | Resolution |
 |-------|------------|
 EOF
-    echo "Created task_plan.md"
+    echo "Created $TASK_PLAN_FILE"
 else
-    echo "task_plan.md already exists, skipping"
+    echo "$TASK_PLAN_FILE already exists, skipping"
 fi
 
-# Create findings.md if it doesn't exist
-if [ ! -f "findings.md" ]; then
-    cat > findings.md << 'EOF'
+# Create findings file if it doesn't exist
+if [ ! -f "$FINDINGS_FILE" ]; then
+    cat > "$FINDINGS_FILE" << 'EOF'
 # Findings & Decisions
 
 ## Requirements
@@ -83,14 +93,14 @@ if [ ! -f "findings.md" ]; then
 ## Resources
 -
 EOF
-    echo "Created findings.md"
+    echo "Created $FINDINGS_FILE"
 else
-    echo "findings.md already exists, skipping"
+    echo "$FINDINGS_FILE already exists, skipping"
 fi
 
-# Create progress.md if it doesn't exist
-if [ ! -f "progress.md" ]; then
-    cat > progress.md << EOF
+# Create progress file if it doesn't exist
+if [ ! -f "$PROGRESS_FILE" ]; then
+    cat > "$PROGRESS_FILE" << EOF
 # Progress Log
 
 ## Session: $DATE
@@ -110,11 +120,12 @@ if [ ! -f "progress.md" ]; then
 | Error | Resolution |
 |-------|------------|
 EOF
-    echo "Created progress.md"
+    echo "Created $PROGRESS_FILE"
 else
-    echo "progress.md already exists, skipping"
+    echo "$PROGRESS_FILE already exists, skipping"
 fi
 
 echo ""
 echo "Planning files initialized!"
-echo "Files: task_plan.md, findings.md, progress.md"
+echo "Directory: .idea/"
+echo "Files: $TASK_PLAN_FILE, $FINDINGS_FILE, $PROGRESS_FILE"

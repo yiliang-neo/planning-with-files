@@ -1,12 +1,16 @@
 #!/bin/bash
-# Check if all phases in task_plan.md are complete
+# Check if all phases in .idea/task_plan_*.md are complete
 # Always exits 0 — uses stdout for status reporting
 # Used by Stop hook to report task completion status
 
-PLAN_FILE="${1:-task_plan.md}"
+if [ -n "$1" ]; then
+    PLAN_FILE="$1"
+else
+    PLAN_FILE=$(ls .idea/task_plan_*.md 2>/dev/null | head -1)
+fi
 
-if [ ! -f "$PLAN_FILE" ]; then
-    echo "[planning-with-files] No task_plan.md found — no active planning session."
+if [ -z "$PLAN_FILE" ] || [ ! -f "$PLAN_FILE" ]; then
+    echo "[planning-with-files] No task_plan file found — no active planning session."
     exit 0
 fi
 
@@ -33,9 +37,9 @@ fi
 
 # Report status (always exit 0 — incomplete task is a normal state)
 if [ "$COMPLETE" -eq "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
-    echo "[planning-with-files] ALL PHASES COMPLETE ($COMPLETE/$TOTAL). If the user has additional work, add new phases to task_plan.md before starting."
+    echo "[planning-with-files] ALL PHASES COMPLETE ($COMPLETE/$TOTAL). If the user has additional work, add new phases to .idea/task_plan_*.md before starting."
 else
-    echo "[planning-with-files] Task in progress ($COMPLETE/$TOTAL phases complete). Update progress.md before stopping."
+    echo "[planning-with-files] Task in progress ($COMPLETE/$TOTAL phases complete). Update .idea/progress_*.md before stopping."
     if [ "$IN_PROGRESS" -gt 0 ]; then
         echo "[planning-with-files] $IN_PROGRESS phase(s) still in progress."
     fi
